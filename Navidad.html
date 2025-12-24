@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta Navideña</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="description" content="Una carta especial con un video sorpresa">
+    <style>
+        :root {
+            --primary-color: #d32f2f;
+            --secondary-color: #2e7d32;
+            --bg-color: #0b1d3a;
+            --letter-bg: #fff9f0;
+            --envelope-bg: #b71c1c;
+            --text-color: #2b2b2b;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            font-family: 'Caveat', cursive;
+            overflow: hidden;
+            transition: background-color 0.5s ease;
+            background-image: radial-gradient(ellipse at top, #0d1b2a 0%, #1b263b 55%, #0b1d3a 100%);
+        }
+
+        .envelope {
+            width: 300px;
+            height: 200px;
+            background-color: #8b0000; /* Fondo interior oscuro */
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            transition: all 0.5s ease;
+            z-index: 5;
+        }
+
+        /* Solapa superior (la que se abre) */
+        .envelope:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #b71c1c; /* Color del sobre */
+            clip-path: polygon(0 0, 50% 50%, 100% 0);
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 6; /* Por encima de la carta cuando está cerrada */
+        }
+
+        /* Solapas laterales e inferior (fijas) */
+        .envelope:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #c62828; /* Color ligeramente más claro para contraste */
+            clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+            /* Recorte inverso para dejar hueco a la carta arriba */
+            clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%, 50% 50%);
+            z-index: 4; /* Por encima de la carta */
+            pointer-events: none;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        /* Usamos un pseudo-elemento adicional en un hijo para las solapas laterales/inferior para mejor control si es necesario, 
+           pero para simplificar, usaremos un truco de bordes o gradientes en el propio .envelope o un hijo.
+           Dado que no quiero cambiar HTML, ajustaré :after para que sean las solapas de abajo y lados.
+        */
+        
+        /* Redefiniendo .envelope para estructura de sobre CSS puro */
+        .envelope {
+            width: 300px;
+            height: 200px;
+            background-color: #6a1b1b; /* Interior oscuro */
+            border-radius: 5px;
+            position: absolute; /* Cambiado a absolute para centrar en mainContent */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            transition: all 0.5s ease;
+            z-index: 10; /* Z-index base */
+        }
+
+        /* Solapa superior (la que se abre) */
+        .envelope:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid #2e7d32; /* Verde Navideño */
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20; /* Solapa superior encima de todo al estar cerrada */
+            clip-path: none;
+            background: transparent;
+        }
+
+        /* Solapas laterales e inferior (fijas) */
+        .envelope:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid #c62828; /* Rojo lateral */
+            border-right: 150px solid #c62828; /* Rojo lateral */
+            border-top: 100px solid transparent;
+            border-bottom: 100px solid #d32f2f; /* Rojo inferior más brillante */
+            z-index: 15; /* Solapas inferiores encima del contenido (si estuviera dentro) */
+            pointer-events: none;
+        }
+
+        /* Estilos de carta corregidos */
+        .letter {
+            position: fixed; /* Fixed para salir del flujo y centrarse en pantalla */
+            width: 260px;
+            height: 160px;
+            background-color: var(--letter-bg);
+            padding: 20px;
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border-radius: 16px;
+            font-size: 1em;
+            line-height: 1.6;
+            text-align: left;
+            border: 12px solid transparent;
+            background-image:
+                linear-gradient(var(--letter-bg), var(--letter-bg)),
+                repeating-linear-gradient(45deg,
+                    #d32f2f 0 12px,
+                    #ffffff 12px 24px,
+                    #2e7d32 24px 36px,
+                    #ffffff 36px 48px);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            z-index: 5; /* Detrás del sobre inicialmente */
+            opacity: 0;
+            visibility: hidden; /* Ocultar texto inicialmente */
+            transform: translate(-50%, -50%) scale(0.5);
+            top: 50%;
+            left: 50%;
+            color: var(--text-color);
+            will-change: transform, opacity;
+        }
+
+        .letter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        .envelope.open ~ .letter {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            width: 80vw;
+            max-width: 600px;
+            height: 80vh;
+            max-height: 800px;
+            z-index: 100; /* Encima de todo al abrirse */
+            transition-delay: 0.4s; /* Esperar a que el sobre se abra un poco */
+        }
+        
+        .letter.closing {
+            width: 80vw;
+            max-width: 600px;
+            height: 80vh;
+            max-height: 800px;
+            animation: letterClose 0.5s ease forwards;
+            z-index: 100;
+        }
+        
+        /* Ajuste para que el icono del árbol no sea parte del after del sobre, sino del .heart */
+
+        .heart {
+            position: absolute;
+            top: 55%; /* Ajustado para coincidir con la punta de la solapa (110px aprox) */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, #ef5350, #b71c1c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            color: white;
+            cursor: pointer;
+            z-index: 50; /* Z-index alto para estar ENCIMA de las solapas */
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 6px rgba(0,0,0,0.4), 
+                inset 2px 2px 4px rgba(255,255,255,0.3),
+                inset -2px -2px 4px rgba(0,0,0,0.3);
+            border: 2px solid #8b0000;
+        }
+        
+        /* Efecto de borde irregular/sello */
+        .heart::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px dashed rgba(255,255,255,0.2);
+            border-radius: 50%;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .heart:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: radial-gradient(circle at 30% 30%, #f44336, #c62828);
+            box-shadow: 
+                0 6px 10px rgba(0,0,0,0.5), 
+                inset 2px 2px 5px rgba(255,255,255,0.4);
+        }
+        
+        .envelope.open:before {
+            transform: rotateX(180deg);
+            z-index: 5; /* Pasa atrás al abrirse */
+        }
+
+        .btn {
+            position: fixed;
+            background-color: var(--primary-color);
+            background-image: linear-gradient(135deg, #c62828 0%, #d32f2f 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 30;
+            font-family: 'Dancing Script', cursive;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.25), 0 0 10px rgba(46,125,50,0.4);
+        }
+
+        .btn:hover {
+            background-color: #b71c1c;
+            background-image: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35), 0 0 15px rgba(46,125,50,0.6);
+        }
+
+        .open-btn {
+            bottom: 30px;
+            left: 30px;
+        }
+
+        .close-btn {
+            top: 30px;
+            right: 30px;
+            display: none;
+        }
+
+        .envelope.open ~ .close-btn {
+            display: block;
+        }
+
+        .envelope.open ~ .open-btn {
+            display: none;
+        }
+
+        .envelope.expanded {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .dark-mode-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3), 0 0 10px rgba(46,125,50,0.5);
+        }
+
+        body.dark-mode {
+            --bg-color: #0d2c22;
+            --letter-bg: #173b2f;
+            --envelope-bg: #8b1a1a;
+            --text-color: #e6f5ff;
+        }
+
+        @media (max-width: 768px) {
+            .envelope.open ~ .letter {
+                width: 90vw;
+                height: 70vh;
+            }
+            .letter {
+                font-size: 0.9em;
+                padding: 15px;
+            }
+            .btn {
+                font-size: 1.2em;
+                padding: 10px 20px;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .envelope {
+            animation: float 4s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        .snow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: #ffffff;
+            font-size: 14px;
+            opacity: 0.9;
+            text-shadow: 0 0 8px rgba(255,255,255,0.7);
+            animation: snowfall 8s linear infinite;
+        }
+
+        @keyframes snowfall {
+            0% {
+                transform: translateY(-10vh);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh);
+                opacity: 0.7;
+            }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .envelope {
+                animation: none;
+            }
+            .snowflake {
+                animation: none;
+            }
+        }
+        
+        @keyframes letterClose {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            60% {
+                transform: translate(-50%, calc(-50% - 40px)) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, calc(-50% - 40px)) scale(1);
+                opacity: 0;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Contenido principal -->
+    <div id="mainContent" style="position: relative; width: 300px; height: 200px; display: flex; justify-content: center; align-items: center;">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌓</button>
+        <div class="envelope">
+            <div class="heart" onclick="toggleEnvelope()">🎄</div>
+        </div>
+        <div class="letter" id="mainMessage"></div>
+        <button class="btn open-btn" id="open">Abrir</button>
+        <button class="btn close-btn" id="close">Cerrar</button>
+        
+        <div class="snow"></div>
+    </div>
+
+    <script>
+        // Funcionalidad de carta.js para leer mensajes personalizados desde URL
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const messageCustom = urlSearchParams.get('message');
+
+        // Mensaje predeterminado si no hay mensaje personalizado
+        const loveMessage = `
+<p>Feliz Navidad, wapetona mía.</p>
+
+<p>Ya es Navidad, la época que más le gusta a mi princesita, esa mujer que tiene un súper espíritu navideño y que me hizo querer más la Navidad que hace unos años. Estoy emocionado por ver la reacción de mi wapetona a su regalo, que hice con tanto cariño.</p>
+
+<p>Todos sabemos que los regalos no son lo más importante, pero yo estoy feliz con el regalo que me dieron: estar con mi princesa es todo lo que necesito. Cada día exijo tener a mi princesa junto a mí y flojear juntos cada segundo del día, porque sí, somos flojos.</p>
+
+<p>Espero que le hayan gustado mis regalos; sé que le hacen ilusión, ya que van de parte mía, así como los regalos de mi amorcito son los que más quiero. Te amito siempre, amorcito. Pasaremos muchas Navidades juntos y recuerda que eres mi princesita hermosa.</p>
+
+<p> Que la pase súper duper hoy, que coma muchas cosas ricas y que disfrute todos los regalos que recibió. Sé lo mucho que disfruta la Navidad, así que espero que sea la mejor de las mejores.</p>
+
+<p>Para mi deseo de Navidad <3</p>
+
+<p>Tu licenciado Lucas, Pascuero en informática. Besitos para la princesa más bella del universo.</p>
+
+        `;
+
+        // Si hay un mensaje personalizado, usarlo; de lo contrario, usar el mensaje predeterminado
+        if (messageCustom) {
+            document.querySelector('#mainMessage').textContent = decodeURI(messageCustom);
+        } else {
+            document.querySelector('#mainMessage').innerHTML = loveMessage;
+        }
+
+        // Obtener referencias a los botones
+        const btnOpenElement = document.querySelector('#open');
+        const btnCloseElement = document.querySelector('#close');
+
+        // Deshabilitar el botón de cerrar inicialmente
+        btnCloseElement.disabled = true;
+
+        // Funciones de carta.html
+        function toggleEnvelope() {
+            const envelope = document.querySelector('.envelope');
+            envelope.classList.toggle('open');
+            setTimeout(() => {
+                envelope.classList.toggle('expanded');
+            }, 500);
+        }
+
+        function openEnvelope() {
+            const envelope = document.querySelector('.envelope');
+            envelope.classList.add('open');
+            setTimeout(() => {
+                envelope.classList.add('expanded');
+            }, 500);
+            
+            // Actualizar estado de los botones
+            btnOpenElement.disabled = true;
+            btnCloseElement.disabled = false;
+        }
+
+        function closeEnvelope() {
+            const envelope = document.querySelector('.envelope');
+            const letter = document.querySelector('.letter');
+            letter.classList.add('closing');
+            envelope.classList.remove('expanded');
+            setTimeout(() => {
+                envelope.classList.remove('open');
+                letter.classList.remove('closing');
+                btnOpenElement.disabled = false;
+                btnCloseElement.disabled = true;
+            }, 500);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function createSnow() {
+            const snowContainer = document.querySelector('.snow');
+            const isReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const numberOfSnowflakes = isReduced ? 30 : 80;
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < numberOfSnowflakes; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                flake.textContent = '❄';
+                flake.style.left = `${Math.random() * 100}%`;
+                flake.style.animationDuration = `${6 + Math.random() * 6}s`;
+                flake.style.animationDelay = `${Math.random() * -10}s`;
+                flake.style.fontSize = `${12 + Math.random() * 16}px`;
+                flake.style.opacity = `${0.6 + Math.random() * 0.4}`;
+                fragment.appendChild(flake);
+            }
+            snowContainer.appendChild(fragment);
+        }
+
+        // Inicializar la nieve
+        createSnow();
+
+        // Agregar event listeners a los botones
+        btnOpenElement.addEventListener('click', openEnvelope);
+        btnCloseElement.addEventListener('click', closeEnvelope);
+    </script>
+</body>
+</html>
